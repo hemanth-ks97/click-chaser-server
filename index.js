@@ -16,18 +16,28 @@ app.get('/count', (req, res) => {
 });
 
 app.post('/increment', (req, res) => {
-  count++;
-  const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress ;
-  const location = geoip.lookup(ip);
-  const region = location.country + '-' + location.region
-  if (region in clickdistribution) {
-    clickdistribution[region] += 1
-  }
-  else {
-    clickdistribution[region] = 1
-  }
-
-  res.json({ count: count, distribution: clickdistribution });
+    count++;
+    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+    var iparr = ip.split(',')
+    console.log(iparr[0]);
+    const location = geoip.lookup(iparr[0]);
+    if (location === null) {
+      if ('Unknown' in clickdistribution) {
+        clickdistribution['Unknown'] = 1
+      } else {
+        clickdistribution['Unknown'] += 1
+      }
+    }
+    console.log(location);
+    const region = location.country + '-' + location.region
+    if (region in clickdistribution) {
+      clickdistribution[region] += 1
+    }
+    else {
+      clickdistribution[region] = 1
+    }
+  
+    res.json({ count: count, distribution: clickdistribution });
 });
 
 app.listen(port, () => {
